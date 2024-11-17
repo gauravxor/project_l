@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Sync App</title>
+</head>
+
+<body>
+    <h1>Local Video Sync</h1>
+    <input type="file" id="videoFile" accept="video/*">
+    <video id="videoPlayer" width="600" controls></video>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const videoPlayer = document.getElementById('videoPlayer');
+        let isSyncing = false;  // To prevent event loops
+
+        // Load video from local file
+        document.getElementById('videoFile').addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const videoURL = URL.createObjectURL(file);
+                videoPlayer.src = videoURL;
+                videoPlayer.load();
+            }
+        });
+
+        // Emit sync events on play, pause, and seek
+        videoPlayer.addEventListener('play', () => {
+            if (!isSyncing) {
+                socket.emit('sync', { action: 'play', currentTime: videoPlayer.currentTime });
+            }
+        });
+
+        videoPlayer.addEventListener('pause', () => {
+            if (!isSyncing) {
+                socket.emit('sync', { action: 'pause', currentTime: videoPlayer.currentTime });
+            }
+        });
+
+        videoPlayer.addEventListener('seeked', () => {
+            if (!isSyncing) {
+                socket.emit('sync', { action: 'seek', currentTime: videoPlayer.currentTime });
+            }
+        });
+
+        // Listen for sync events from other user
+        socket.on('sync', (data) => {
+            isSyncing = true;  // Prevent loops
+            if (data.action === 'play') {
+                videoPlayer.currentTime = data.currentTime;
+                videoPlayer.play();
+            } else if (data.action === 'pause') {
+                videoPlayer.currentTime = data.currentTime;
+                videoPlayer.pause();
+            } else if (data.action === 'seek') {
+                videoPlayer.currentTime = data.currentTime;
+            }
+            isSyncing = false;
+        });
+    </script>
+</body>
+
+</html>
