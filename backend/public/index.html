@@ -11,69 +11,8 @@
     <h1>Project_L ❤️</h1>
     <input type="file" id="videoFile" accept="video/*">
     <video id="videoPlayer" width="600" controls></video>
-
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        const videoPlayer = document.getElementById('videoPlayer');
-        let isSyncing = false;  // To prevent event loops
-
-        // Load video from local file
-        document.getElementById('videoFile').addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const videoURL = URL.createObjectURL(file);
-                videoPlayer.src = videoURL;
-                videoPlayer.load();
-            }
-        });
-
-        // Emit sync events on play, pause, and seek
-        videoPlayer.addEventListener('play', () => {
-            if (!isSyncing) {
-                console.log("************************")
-                // console.log("play event recevied")
-                // console.log("play event sent")
-                console.log("pl event rcvd")
-                console.log("pl event snt")
-                console.log("************************")
-                socket.emit('sync', { action: 'play', currentTime: videoPlayer.currentTime });
-            }
-        });
-
-        videoPlayer.addEventListener('pause', () => {
-            if (!isSyncing) {
-                console.log("************************")
-                console.log("pz event snt")
-                console.log("pz event rcvd")
-                // console.log("pause event received")
-                // console.log("pause event sent")
-                console.log("************************")
-                socket.emit('sync', { action: 'pause', currentTime: videoPlayer.currentTime });
-            }
-        });
-
-        videoPlayer.addEventListener('seeked', () => {
-            if (!isSyncing) {
-                socket.emit('sync', { action: 'seek', currentTime: videoPlayer.currentTime });
-            }
-        });
-
-        // Listen for sync events from other user
-        socket.on('sync', (data) => {
-            isSyncing = true;  // Prevent loops
-            if (data.action === 'play') {
-                videoPlayer.currentTime = data.currentTime;
-                videoPlayer.play();
-            } else if (data.action === 'pause') {
-                videoPlayer.currentTime = data.currentTime;
-                videoPlayer.pause();
-            } else if (data.action === 'seek') {
-                videoPlayer.currentTime = data.currentTime;
-            }
-            isSyncing = false;
-        });
-    </script>
+    <script src="/script.js"></script>
 </body>
 
 </html>
